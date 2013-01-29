@@ -9,7 +9,7 @@
  */
 
 #import "MacVim.h"
-
+#import "MMVimMenu.h"
 
 @class MMWindowController;
 
@@ -25,7 +25,7 @@
     BOOL                isInitialized;
     MMWindowController  *windowController;
     id                  backendProxy;
-    NSMenu              *mainMenu;
+    MMVimMenu              *mainMenu;
     NSMutableArray      *popupMenuItems;
 
     // TODO: Move all toolbar code to window controller?
@@ -49,7 +49,7 @@
 - (MMWindowController *)windowController;
 - (NSDictionary *)vimState;
 - (id)objectForVimStateKey:(NSString *)key;
-- (NSMenu *)mainMenu;
+- (MMVimMenu *)mainMenu;
 - (BOOL)isPreloading;
 - (void)setIsPreloading:(BOOL)yn;
 - (BOOL)hasModifiedBuffer;

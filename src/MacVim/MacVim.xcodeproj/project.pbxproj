@@ -69,6 +69,9 @@
 		8D11072B0486CEB800E47090 /* InfoPlist.strings in Resources */ = {isa = PBXBuildFile; fileRef = 089C165CFE840E0CC02AAC07 /* InfoPlist.strings */; };
 		8D11072D0486CEB800E47090 /* main.m in Sources */ = {isa = PBXBuildFile; fileRef = 29B97316FDCFA39411CA2CEA /* main.m */; settings = {ATTRIBUTES = (); }; };
 		8D11072F0486CEB800E47090 /* Cocoa.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 1058C7A1FEA54F0111CA2CBB /* Cocoa.framework */; };
+		F894CD6516B7A43400795EC9 /* MMVimMenu.m in Sources */ = {isa = PBXBuildFile; fileRef = F894CD6216B7A43400795EC9 /* MMVimMenu.m */; };
+		F894CD6616B7A43400795EC9 /* MMVimMenuItem.m in Sources */ = {isa = PBXBuildFile; fileRef = F894CD6316B7A43400795EC9 /* MMVimMenuItem.m */; };
+		F894CD6716B7A43400795EC9 /* MMVimMenuItemView.m in Sources */ = {isa = PBXBuildFile; fileRef = F894CD6416B7A43400795EC9 /* MMVimMenuItemView.m */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXContainerItemProxy section */
@@ -211,6 +214,12 @@
 		32CA4F630368D1EE00C91783 /* MacVim_Prefix.pch */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = MacVim_Prefix.pch; sourceTree = "<group>"; };
 		8D1107310486CEB800E47090 /* Info.plist */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.plist; path = Info.plist; sourceTree = "<group>"; };
 		8D1107320486CEB800E47090 /* MacVim.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = MacVim.app; sourceTree = BUILT_PRODUCTS_DIR; };
+		F894CD5F16B7A43400795EC9 /* MMVimMenu.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = MMVimMenu.h; sourceTree = "<group>"; };
+		F894CD6016B7A43400795EC9 /* MMVimMenuItem.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = MMVimMenuItem.h; sourceTree = "<group>"; };
+		F894CD6116B7A43400795EC9 /* MMVimMenuItemView.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = MMVimMenuItemView.h; sourceTree = "<group>"; };
+		F894CD6216B7A43400795EC9 /* MMVimMenu.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = MMVimMenu.m; sourceTree = "<group>"; };
+		F894CD6316B7A43400795EC9 /* MMVimMenuItem.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = MMVimMenuItem.m; sourceTree = "<group>"; };
+		F894CD6416B7A43400795EC9 /* MMVimMenuItemView.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = MMVimMenuItemView.m; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -230,6 +239,12 @@
 		080E96DDFE201D6D7F000001 /* MacVim Source */ = {
 			isa = PBXGroup;
 			children = (
+				F894CD5F16B7A43400795EC9 /* MMVimMenu.h */,
+				F894CD6216B7A43400795EC9 /* MMVimMenu.m */,
+				F894CD6016B7A43400795EC9 /* MMVimMenuItem.h */,
+				F894CD6316B7A43400795EC9 /* MMVimMenuItem.m */,
+				F894CD6116B7A43400795EC9 /* MMVimMenuItemView.h */,
+				F894CD6416B7A43400795EC9 /* MMVimMenuItemView.m */,
 				1D44972111FCA9B400B0630F /* MMCoreTextView+ToolTip.m */,
 				1D6008890E96A0B2003763F0 /* MMFindReplaceController.h */,
 				1D60088A0E96A0B2003763F0 /* MMFindReplaceController.m */,
@@ -560,6 +575,9 @@
 				1D60088B0E96A0B2003763F0 /* MMFindReplaceController.m in Sources */,
 				1DE63FFB0E71820F00959BDB /* MMCoreTextView.m in Sources */,
 				1D44972211FCA9B400B0630F /* MMCoreTextView+ToolTip.m in Sources */,
+				F894CD6516B7A43400795EC9 /* MMVimMenu.m in Sources */,
+				F894CD6616B7A43400795EC9 /* MMVimMenuItem.m in Sources */,
+				F894CD6716B7A43400795EC9 /* MMVimMenuItemView.m in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};

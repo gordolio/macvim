@@ -31,6 +31,8 @@
 #import "MMTextView.h"
 #import "MMVimController.h"
 #import "MMVimView.h"
+#import "MMVimMenu.h"
+#import "MMVimMenuItem.h"
 #import "MMWindowController.h"
 #import "Miscellaneous.h"
 #import "MMCoreTextView.h"
@@ -80,8 +82,8 @@ static BOOL isUnsafeMessage(int msgid);
                 context:(void *)context;
 - (void)alertDidEnd:(MMAlert *)alert code:(int)code context:(void *)context;
 - (NSMenuItem *)menuItemForDescriptor:(NSArray *)desc;
-- (NSMenu *)parentMenuForDescriptor:(NSArray *)desc;
-- (NSMenu *)topLevelMenuForTitle:(NSString *)title;
+- (MMVimMenu *)parentMenuForDescriptor:(NSArray *)desc;
+- (MMVimMenu *)topLevelMenuForTitle:(NSString *)title;
 - (void)addMenuWithDescriptor:(NSArray *)desc atIndex:(int)index;
 - (void)addMenuItemWithDescriptor:(NSArray *)desc
                           atIndex:(int)index
@@ -90,7 +92,8 @@ static BOOL isUnsafeMessage(int msgid);
                     keyEquivalent:(NSString *)keyEquivalent
                      modifierMask:(int)modifierMask
                            action:(NSString *)action
-                      isAlternate:(BOOL)isAlternate;
+                      isAlternate:(BOOL)isAlternate
+                      commandLine:(NSString *)commandLine;
 - (void)removeMenuItemWithDescriptor:(NSArray *)desc;
 - (void)enableMenuItemWithDescriptor:(NSArray *)desc state:(BOOL)on;
 - (void)addToolbarItemToDictionaryWithLabel:(NSString *)title
@@ -144,7 +147,7 @@ static BOOL isUnsafeMessage(int msgid);
     // Set up a main menu with only a "MacVim" menu (copied from a template
     // which itself is set up in MainMenu.nib).  The main menu is populated
     // by Vim later on.
-    mainMenu = [[NSMenu alloc] initWithTitle:@"MainMenu"];
+    mainMenu = [[MMVimMenu alloc] initWithTitle:@"MainMenu"];
     NSMenuItem *appMenuItem = [[MMAppController sharedInstance]
                                         appMenuItemTemplate];
     appMenuItem = [[appMenuItem copy] autorelease];
@@ -206,7 +209,7 @@ static BOOL isUnsafeMessage(int msgid);
     return [vimState objectForKey:key];
 }
 
-- (NSMenu *)mainMenu
+- (MMVimMenu *)mainMenu
 {
     return mainMenu;
 }
@@ -631,7 +634,8 @@ static BOOL isUnsafeMessage(int msgid);
                 keyEquivalent:[attrs objectForKey:@"keyEquivalent"]
                  modifierMask:[[attrs objectForKey:@"modifierMask"] intValue]
                        action:[attrs objectForKey:@"action"]
-                  isAlternate:[[attrs objectForKey:@"isAlternate"] boolValue]];
+                  isAlternate:[[attrs objectForKey:@"isAlternate"] boolValue]
+                  commandLine:[attrs objectForKey:@"commandLine"]];
     } else if (RemoveMenuItemMsgID == msgid) {
         NSDictionary *attrs = [NSDictionary dictionaryWithData:data];
         [self removeMenuItemWithDescriptor:[attrs objectForKey:@"descriptor"]];
@@ -985,7 +989,7 @@ static BOOL isUnsafeMessage(int msgid);
     return item;
 }
 
-- (NSMenu *)parentMenuForDescriptor:(NSArray *)desc
+- (MMVimMenu *)parentMenuForDescriptor:(NSArray *)desc
 {
     if (!(desc && [desc count] > 0)) return nil;
 
@@ -993,12 +997,12 @@ static BOOL isUnsafeMessage(int msgid);
     NSArray *rootItems = [rootName hasPrefix:@"PopUp"] ? popupMenuItems
                                                        : [mainMenu itemArray];
 
-    NSMenu *menu = nil;
+    MMVimMenu *menu = nil;
     int i, count = [rootItems count];
     for (i = 0; i < count; ++i) {
         NSMenuItem *item = [rootItems objectAtIndex:i];
         if ([[item title] isEqual:rootName]) {
-            menu = [item submenu];
+            menu = (MMVimMenu*)[item submenu];
             break;
         }
     }
@@ -1008,14 +1012,14 @@ static BOOL isUnsafeMessage(int msgid);
     count = [desc count] - 1;
     for (i = 1; i < count; ++i) {
         NSMenuItem *item = [menu itemWithTitle:[desc objectAtIndex:i]];
-        menu = [item submenu];
+        menu = (MMVimMenu*)[item submenu];
         if (!menu) return nil;
     }
 
     return menu;
 }
 
-- (NSMenu *)topLevelMenuForTitle:(NSString *)title
+- (MMVimMenu *)topLevelMenuForTitle:(NSString *)title
 {
     // Search only the top-level menus.
 
@@ -1023,14 +1027,14 @@ static BOOL isUnsafeMessage(int msgid);
     for (i = 0; i < count; ++i) {
         NSMenuItem *item = [popupMenuItems objectAtIndex:i];
         if ([title isEqual:[item title]])
-            return [item submenu];
+            return (MMVimMenu*)[item submenu];
     }
 
     count = [mainMenu numberOfItems];
     for (i = 0; i < count; ++i) {
         NSMenuItem *item = [mainMenu itemAtIndex:i];
         if ([title isEqual:[item title]])
-            return [item submenu];
+            return (MMVimMenu*)[item submenu];
     }
 
     return nil;
@@ -1064,12 +1068,12 @@ static BOOL isUnsafeMessage(int msgid);
     // This is either a main menu item or a popup menu item.
     NSString *title = [desc lastObject];
     NSMenuItem *item = [[NSMenuItem alloc] init];
-    NSMenu *menu = [[NSMenu alloc] initWithTitle:title];
+    MMVimMenu *menu = [[MMVimMenu alloc] initWithTitle:title];
 
     [item setTitle:title];
     [item setSubmenu:menu];
 
-    NSMenu *parent = [self parentMenuForDescriptor:desc];
+    MMVimMenu *parent = [self parentMenuForDescriptor:desc];
     if (!parent && [rootName hasPrefix:@"PopUp"]) {
         if ([popupMenuItems count] <= idx) {
             [popupMenuItems addObject:item];
@@ -1100,6 +1104,7 @@ static BOOL isUnsafeMessage(int msgid);
                      modifierMask:(int)modifierMask
                            action:(NSString *)action
                       isAlternate:(BOOL)isAlternate
+                      commandLine:(NSString *)commandLine
 {
     if (!(desc && [desc count] > 1 && idx >= 0)) return;
 
@@ -1112,7 +1117,7 @@ static BOOL isUnsafeMessage(int msgid);
         return;
     }
 
-    NSMenu *parent = [self parentMenuForDescriptor:desc];
+    MMVimMenu *parent = (MMVimMenu*)[self parentMenuForDescriptor:desc];
     if (!parent) {
         ASLogWarn(@"Menu item '%@' has no parent",
                   [desc componentsJoinedByString:@"->"]);
@@ -1125,8 +1130,9 @@ static BOOL isUnsafeMessage(int msgid);
         item = [NSMenuItem separatorItem];
         [item setTitle:title];
     } else {
-        item = [[[NSMenuItem alloc] init] autorelease];
-        [item setTitle:title];
+        MMVimMenuItem* vitem = [[[MMVimMenuItem alloc] init] autorelease];
+        [vitem setTitle:title];
+        [vitem setTip:tip];
 
         // Note: It is possible to set the action to a message that "doesn't
         // exist" without problems.  We take advantage of this when adding
@@ -1134,19 +1140,21 @@ static BOOL isUnsafeMessage(int msgid);
         // which case a recentFilesDummy: action is set, although it is never
         // used).
         if ([action length] > 0)
-            [item setAction:NSSelectorFromString(action)];
+            [vitem setAction:NSSelectorFromString(action)];
         else
-            [item setAction:@selector(vimMenuItemAction:)];
-        if ([tip length] > 0) [item setToolTip:tip];
-        if ([keyEquivalent length] > 0) {
-            [item setKeyEquivalent:keyEquivalent];
-            [item setKeyEquivalentModifierMask:modifierMask];
+            [vitem setAction:@selector(vimMenuItemAction:)];
+        if ([tip length] > 0) {
+            [vitem setToolTip:tip];
         }
-        [item setAlternate:isAlternate];
+        if ([keyEquivalent length] > 0) {
+            [vitem setKeyEquivalent:keyEquivalent andModifierMask:modifierMask];
+        }
+        [vitem setAlternate:isAlternate];
 
         // The tag is used to indicate whether Vim thinks a menu item should be
         // enabled or disabled.  By default Vim thinks menu items are enabled.
-        [item setTag:1];
+        [vitem setTag:1];
+        item = vitem;
     }
 
     if ([parent numberOfItems] <= idx) {
@@ -1154,6 +1162,7 @@ static BOOL isUnsafeMessage(int msgid);
     } else {
         [parent insertItem:item atIndex:idx];
     }
+    [parent widthRequiresUpdate];
 }
 
 - (void)removeMenuItemWithDescriptor:(NSArray *)desc
@@ -1290,7 +1299,7 @@ static BOOL isUnsafeMessage(int msgid);
                           atRow:(NSNumber *)row
                          column:(NSNumber *)col
 {
-    NSMenu *menu = [[self menuItemForDescriptor:desc] submenu];
+    MMVimMenu *menu = (MMVimMenu*)[[self menuItemForDescriptor:desc] submenu];
     if (!menu) return;
 
     id textView = [[windowController vimView] textView];
@@ -1316,7 +1325,7 @@ static BOOL isUnsafeMessage(int msgid);
                          clickCount:0
                            pressure:1.0];
 
-    [NSMenu popUpContextMenu:menu withEvent:event forView:textView];
+    [MMVimMenu popUpContextMenu:menu withEvent:event forView:textView];
 }
 
 - (void)popupMenuWithAttributes:(NSDictionary *)attrs
